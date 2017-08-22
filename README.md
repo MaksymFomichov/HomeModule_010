@@ -42,7 +42,7 @@
 List<Fruit> getAvailableFruits(Date date)
 
 В главном классе программы проверьте работоспособность этих методов.
-Задание 3
+## Задание 3
 Перегрузить имеющиеся методы spoiledFruits и availableFruits.
 На прием еще одного параметра - вид фрукта
 List<Fruit> getSpoiledFruits(Date date, Type type)
