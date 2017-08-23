@@ -1,8 +1,7 @@
-package company.datagenerator;
+package company.others;
 
 import com.alibaba.fastjson.JSON;
-import company.Fruit;
-import company.filework.FileUtils;
+import company.shop.Fruit;
 
 import java.io.IOException;
 import java.math.BigDecimal;

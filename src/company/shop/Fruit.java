@@ -1,4 +1,4 @@
-package company;
+package company.shop;
 
 import java.math.BigDecimal;
 
