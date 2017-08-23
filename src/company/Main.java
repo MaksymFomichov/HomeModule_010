@@ -5,7 +5,6 @@ import company.shop.Fruit;
 import company.shop.TradeShop;
 
 import java.text.ParseException;
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
@@ -26,45 +25,78 @@ public class Main {
         // делаем проверки по второй задаче
         secondTask();
 
-
+        // делаем проверки по третьей задаче
+        thirdTask();
     }
+
 
     private static void firstTask() throws ParseException {
         // делаем первую поставку
         tradeShop.addFruits(date1);
         // поверяем что все в окей методом, который выводит в консоль текущий склад магазина
         tradeShop.showCurrentStatus();
-//        // длаем вторую поставку
-//        tradeShop.addFruits(date2);
-//        // поверяем что все в окей методом, который выводит в консоль текущий склад магазина
-//        tradeShop.showCurrentStatus();
-//        // длаем третью поставку
-//        tradeShop.addFruits(date3);
-//        // поверяем что все в окей методом, который выводит в консоль текущий склад магазина
-//        tradeShop.showCurrentStatus();
-//        // сохраняем информацию
-//        tradeShop.save(DB_fruits);
-//        // загружаем информацию из файла основной базы для лавки
-//        tradeShop.load(DB_fruits);
-//        // поверяем что все в окей методом, который выводит в консоль текущий склад магазина
-//        tradeShop.showCurrentStatus();
+        // длаем вторую поставку
+        tradeShop.addFruits(date2);
+        // поверяем что все в окей методом, который выводит в консоль текущий склад магазина
+        tradeShop.showCurrentStatus();
+        // длаем третью поставку
+        tradeShop.addFruits(date3);
+        // поверяем что все в окей методом, который выводит в консоль текущий склад магазина
+        tradeShop.showCurrentStatus();
+        // сохраняем информацию
+        tradeShop.save(DB_fruits);
+        // загружаем информацию из файла основной базы для лавки
+        tradeShop.load(DB_fruits);
+        // поверяем что все в окей методом, который выводит в консоль текущий склад магазина
+        tradeShop.showCurrentStatus();
     }
 
     private static void secondTask() throws ParseException {
         // создаем дату
         Date date = tradeShop.convertStringToDate("25.09.2017");
+
         // получаем продукты, которые испортятся к заданной дате
         List<Fruit> fruitsSpoiled = tradeShop.getSpoiledFruits(date);
         // выводим их
         System.out.println("\nСписок продуктов, которые испортятся к " + tradeShop.dateFormat.format(date));
         tradeShop.showCurrentStatus(fruitsSpoiled);
+
         // получаем продукты, которые не испортятся к заданной дате
         List<Fruit> fruitsAvailable = tradeShop.getAvailableFruits(date);
         // выводим их
         System.out.println("\nСписок продуктов, которые не испортятся к " + tradeShop.dateFormat.format(date));
         tradeShop.showCurrentStatus(fruitsAvailable);
+    }
 
+    private static void thirdTask() throws ParseException {
+        // создаем дату
+        Date date = tradeShop.convertStringToDate("25.09.2017");
+        Date dateDelivery = tradeShop.convertStringToDate("20.08.2017");
+        // создаем фрукт для поиска
+        Fruit.TypeFruit typeFruit = Fruit.TypeFruit.ананас;
 
+        // получаем список по конкретному фрукту, которые испортятся к заданной дате
+        List<Fruit> fruitSpoiled = tradeShop.getSpoiledFruits(date, typeFruit);
+        // выводим его
+        System.out.println("\nСписок " + typeFruit + ", которые испортятся к " + tradeShop.dateFormat.format(date));
+        tradeShop.showCurrentStatus(fruitSpoiled);
 
+        // получаем список по конкретному фрукту, которые не испортятся к заданной дате
+        List<Fruit> fruitAvailable = tradeShop.getAvailableFruits(date, typeFruit);
+        // выводим его
+        System.out.println("\nСписок " + typeFruit + ", которые не испортятся к " + tradeShop.dateFormat.format(date));
+        tradeShop.showCurrentStatus(fruitAvailable);
+
+        // получаем список фруктов по конкретной дате поставки
+        List<Fruit> addedFruits = tradeShop.getAddedFruits(dateDelivery);
+        // выводим его
+        System.out.println("\nСписок фрутов, которые поставлены " + tradeShop.dateFormat.format(dateDelivery));
+        tradeShop.showCurrentStatus(addedFruits);
+
+        // получаем список определленоого фрукта по конкретной дате поставки
+        List<Fruit> addedFruitsType = tradeShop.getAddedFruits(dateDelivery, typeFruit);
+        // выводим его
+        System.out.println("\nСписок " + typeFruit + ", которые поставлены " + tradeShop.dateFormat.format(dateDelivery));
+        tradeShop.showCurrentStatus(addedFruitsType);
     }
 }

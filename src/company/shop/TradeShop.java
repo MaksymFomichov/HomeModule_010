@@ -12,7 +12,7 @@ import java.util.Date;
 import java.util.List;
 
 public class TradeShop {
-    private List<Fruit> fruits = new ArrayList<>();
+    private List<Fruit> fruitsDB = new ArrayList<>();
     public final SimpleDateFormat dateFormat = new SimpleDateFormat("dd.MM.yyyy"); // задаем формат даты
     private Calendar calendar = Calendar.getInstance(); // подключаем календарь
 
@@ -24,16 +24,16 @@ public class TradeShop {
         } catch (IOException e) {
             e.printStackTrace();
         }
-        if (fruits.size() == 0) {
-            fruits = JSON.parseArray(json, Fruit.class);
+        if (fruitsDB.size() == 0) {
+            fruitsDB = JSON.parseArray(json, Fruit.class);
         } else {
-            fruits.addAll(JSON.parseArray(json, Fruit.class));
+            fruitsDB.addAll(JSON.parseArray(json, Fruit.class));
         }
     }
 
     // метод который сохранит всю информацию со склада лавки в json файл
     public void save(String pathToJsonFile) {
-        String json = JSON.toJSONString(fruits);
+        String json = JSON.toJSONString(fruitsDB);
         try {
             FileUtils.writeToFile(json, pathToJsonFile);
         } catch (IOException e) {
@@ -43,7 +43,7 @@ public class TradeShop {
 
     // метод который удаляют текущую информацию из коллекции и загружает новую из сохраненной версии
     public void load(String pathToJsonFile) {
-        fruits.clear();
+        fruitsDB.clear();
         //showCurrentStatus(); // проверяем, что текущая база пуста
         String json = null;
         try {
@@ -51,13 +51,13 @@ public class TradeShop {
         } catch (IOException e) {
             e.printStackTrace();
         }
-        fruits = JSON.parseArray(json, Fruit.class);
+        fruitsDB = JSON.parseArray(json, Fruit.class);
     }
 
     // метод способный сказать какие продукты испортятся к заданной дате
     public List<Fruit> getSpoiledFruits(Date date) throws ParseException {
         List<Fruit> fruitList = new ArrayList<>();
-        for (Fruit value : fruits) {
+        for (Fruit value : fruitsDB) {
             Date dateExpiration = getDateExpiration(value.getDateDelivery(), value.getDateExpiration()); // день окончания срока хранения
             if (datesComparing(dateExpiration, date)) {
                 fruitList.add(value);
@@ -66,10 +66,24 @@ public class TradeShop {
         return fruitList;
     }
 
-    // метод который возвращает список готовых к продаже продуктов
-    public List<Fruit> getAvailableFruits(Date date) throws ParseException{
+    // метод способный сказать какие продукты испортятся к заданной дате (проверка на заданный фрукт)
+    public List<Fruit> getSpoiledFruits(Date date, Fruit.TypeFruit typeFruit) throws ParseException {
         List<Fruit> fruitList = new ArrayList<>();
-        for (Fruit value : fruits) {
+        for (Fruit value : fruitsDB) {
+            if (value.getFruit().equals(typeFruit)) {
+                Date dateExpiration = getDateExpiration(value.getDateDelivery(), value.getDateExpiration()); // день окончания срока хранения
+                if (datesComparing(dateExpiration, date)) {
+                    fruitList.add(value);
+                }
+            }
+        }
+        return fruitList;
+    }
+
+    // метод который возвращает список готовых к продаже продуктов
+    public List<Fruit> getAvailableFruits(Date date) throws ParseException {
+        List<Fruit> fruitList = new ArrayList<>();
+        for (Fruit value : fruitsDB) {
             Date dateExpiration = getDateExpiration(value.getDateDelivery(), value.getDateExpiration()); // день окончания срока хранения
             if (!datesComparing(dateExpiration, date)) {
                 fruitList.add(value);
@@ -78,9 +92,50 @@ public class TradeShop {
         return fruitList;
     }
 
+    // метод который возвращает список готовых к продаже продуктов (проверка на заданный фрукт)
+    public List<Fruit> getAvailableFruits(Date date, Fruit.TypeFruit typeFruit) throws ParseException {
+        List<Fruit> fruitList = new ArrayList<>();
+        for (Fruit value : fruitsDB) {
+            if (value.getFruit().equals(typeFruit)) {
+                Date dateExpiration = getDateExpiration(value.getDateDelivery(), value.getDateExpiration()); // день окончания срока хранения
+                if (!datesComparing(dateExpiration, date)) {
+                    fruitList.add(value);
+                }
+            }
+        }
+        return fruitList;
+    }
+
+    // метод который возвращает продукты которые были доставлены в заданную дату
+    public List<Fruit> getAddedFruits(Date date) throws ParseException {
+        List<Fruit> fruitList = new ArrayList<>();
+        for (Fruit value : fruitsDB) {
+            Date dateDelivery = convertStringToDate(value.getDateDelivery());
+            if (dateDelivery.getTime() == date.getTime()) {
+                fruitList.add(value);
+            }
+        }
+        return fruitList;
+    }
+
+    // метод который возвращает определенный тип пролукт который были доставлены в заданную дату
+    public List<Fruit> getAddedFruits(Date date, Fruit.TypeFruit typeFruit) throws ParseException {
+        List<Fruit> fruitList = new ArrayList<>();
+        for (Fruit value : fruitsDB) {
+            Date dateDelivery = convertStringToDate(value.getDateDelivery());
+            if (dateDelivery.getTime() == date.getTime()) {
+                if (value.getFruit().equals(typeFruit)) {
+                    fruitList.add(value);
+                }
+            }
+        }
+        return fruitList;
+    }
+
+
     // вывод текущей информации по лавке
     public void showCurrentStatus() throws ParseException {
-        showCurrentStatus(fruits);
+        showCurrentStatus(fruitsDB);
     }
 
     // вывод текущей информации по полученной коллекции
@@ -100,9 +155,9 @@ public class TradeShop {
         return newDate;
     }
 
-    // возвращаем true если дата окончания срока хранения больше чем запрашиваемая дата
-    private Boolean datesComparing(Date dateExpiration, Date dateSpecified) {
-        if (dateExpiration.getTime() < dateSpecified.getTime()) {
+    // сравнениваем две даты
+    private Boolean datesComparing(Date dateExpiration, Date date) {
+        if (dateExpiration.getTime() < date.getTime()) {
             return true;
         } else {
             return false;
