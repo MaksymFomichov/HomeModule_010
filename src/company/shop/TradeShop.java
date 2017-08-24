@@ -1,6 +1,7 @@
 package company.shop;
 
 import com.alibaba.fastjson.JSON;
+import company.Main;
 import company.others.FileUtils;
 
 import java.io.IOException;
@@ -13,8 +14,14 @@ import java.util.List;
 
 public class TradeShop {
     private List<Fruit> fruitsDB = new ArrayList<>();
+    private List<Client> orderList = new ArrayList<>();
     public final SimpleDateFormat dateFormat = new SimpleDateFormat("dd.MM.yyyy"); // задаем формат даты
     private Calendar calendar = Calendar.getInstance(); // подключаем календарь
+    private Purse moneyBalance = new Purse();
+
+    public Purse getPurse() {
+        return moneyBalance;
+    }
 
     // метод принимает путь к файлу внутри которого находится json с фруктами и датой поставки
     public void addFruits(String pathToJsonFile) {
@@ -132,6 +139,58 @@ public class TradeShop {
         return fruitList;
     }
 
+    // метод продажи
+    public void sell(String pathToJsonFile) {
+        String json = null;
+        try {
+            json = FileUtils.readFromFile(pathToJsonFile);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        if (orderList.size() == 0) {
+            orderList = JSON.parseArray(json, Client.class);
+        } else {
+            orderList.addAll(JSON.parseArray(json, Client.class));
+        }
+        showOrderList(); // показываем список покупок
+        if (checkFruits()) {
+            // поэлементно удаляем из базы нужное значение
+            for (int i = 0; i < orderList.size(); i++) {
+                for (int j = 0; j < orderList.get(i).getCount(); j++) {
+                    for (int k = 0; k < fruitsDB.size(); k++) {
+                        if (orderList.get(i).getTypeFruit().equals(fruitsDB.get(k).getFruit())) {
+                            moneyBalance.addPurse(fruitsDB.get(k).getPrice()); // заполняем кошелек баблом
+                            fruitsDB.remove(k);
+                            break;
+                        }
+
+                    }
+                }
+            }
+            showCurrentStatusCountFruits(); // показываем склад в количкестве по кадлому фрукту
+            save(Main.DB_fruits); // обновляем файл json
+        }
+    }
+
+    // проверка на достаточность на складе
+    private Boolean checkFruits() {
+        for (Client value : orderList) {
+            if (getCountFruit(value.getTypeFruit()) <= getCountFruitOrder(value.getTypeFruit())) {
+                System.out.println("\nНедостаточно фруктов на складе!");
+                return false;
+            }
+        }
+        return true;
+    }
+
+    // вывод списка покупок
+    private void showOrderList() {
+        System.out.printf("\n%10s%15s%15s%n", "имя", "фрукт", "количество");
+        System.out.println("-------------------------------------------");
+        for (Client value : orderList) {
+            System.out.printf("%10s%15s%10s%n", "" + value.getName() + "", "" + value.getTypeFruit() + "", "" + value.getCount());
+        }
+    }
 
     // вывод текущей информации по лавке
     public void showCurrentStatus() throws ParseException {
@@ -144,6 +203,37 @@ public class TradeShop {
         System.out.println("---------------------------------------------------------------------------------------");
         for (Fruit value : fruitList) {
             System.out.printf("%10s%15s%10s%10s%25s%n", "" + value.getDateDelivery() + "", "" + value.getFruit() + "", "" + value.getPrice(), "" + value.getDateExpiration(), "" + dateFormat.format(getDateExpiration(value.getDateDelivery(), value.getDateExpiration())));
+        }
+    }
+
+    // получение  информации по складу по количеству искомого фрукта
+    private int getCountFruit(Fruit.TypeFruit typeFruit) {
+        int count = 0;
+        for (Fruit value : fruitsDB) {
+            if (typeFruit.equals(value.getFruit())) {
+                count++;
+            }
+        }
+        return count;
+    }
+
+    // получение  информации по заявке по количеству искомого фрукта
+    private int getCountFruitOrder(Fruit.TypeFruit typeFruit) {
+        int count = 0;
+        for (Client value : orderList) {
+            if (typeFruit.equals(value.getTypeFruit())) {
+                count += value.getCount();
+            }
+        }
+        return count;
+    }
+
+    // выводим в консоль количество каждого фрукта на складе
+    public void showCurrentStatusCountFruits() {
+        System.out.printf("\n%10s%15s%n", "тип фрукта", "количество");
+        System.out.println("---------------------------------------");
+        for (Fruit.TypeFruit value : Fruit.TypeFruit.values()) {
+            System.out.printf("%10s%10s%n", "" + value, "" + getCountFruit(value));
         }
     }
 

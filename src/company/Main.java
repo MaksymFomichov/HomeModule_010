@@ -9,15 +9,16 @@ import java.util.Date;
 import java.util.List;
 
 public class Main {
-    private static String DB_fruits = "files/data.txt";
+    public static String DB_fruits = "files/data.txt";
     private static TradeShop tradeShop = new TradeShop();
     private static String date1 = "files/date_20.08.2017.txt";
     private static String date2 = "files/date_21.08.2017.txt";
     private static String date3 = "files/date_23.08.2017.txt";
+    private static String order = "files/order.txt";
 
     public static void main(String[] args) throws ParseException {
         // генерируем три файла постаки фруктов
-        GenerateStartJSON.startGenerate();
+        GenerateStartJSON.generateDelivery();
 
         // делаем проверки по первой задаче
         firstTask();
@@ -27,8 +28,10 @@ public class Main {
 
         // делаем проверки по третьей задаче
         thirdTask();
-    }
 
+        // делаем проверки по четвертому заданию
+        fourthTask();
+    }
 
     private static void firstTask() throws ParseException {
         // делаем первую поставку
@@ -53,7 +56,7 @@ public class Main {
 
     private static void secondTask() throws ParseException {
         // создаем дату
-        Date date = tradeShop.convertStringToDate("25.09.2017");
+        Date date = tradeShop.convertStringToDate("01.09.2017");
 
         // получаем продукты, которые испортятся к заданной дате
         List<Fruit> fruitsSpoiled = tradeShop.getSpoiledFruits(date);
@@ -70,10 +73,10 @@ public class Main {
 
     private static void thirdTask() throws ParseException {
         // создаем дату
-        Date date = tradeShop.convertStringToDate("25.09.2017");
+        Date date = tradeShop.convertStringToDate("01.09.2017");
         Date dateDelivery = tradeShop.convertStringToDate("20.08.2017");
         // создаем фрукт для поиска
-        Fruit.TypeFruit typeFruit = Fruit.TypeFruit.ананас;
+        Fruit.TypeFruit typeFruit = Fruit.TypeFruit.апельсин;
 
         // получаем список по конкретному фрукту, которые испортятся к заданной дате
         List<Fruit> fruitSpoiled = tradeShop.getSpoiledFruits(date, typeFruit);
@@ -98,5 +101,18 @@ public class Main {
         // выводим его
         System.out.println("\nСписок " + typeFruit + ", которые поставлены " + tradeShop.dateFormat.format(dateDelivery));
         tradeShop.showCurrentStatus(addedFruitsType);
+    }
+
+
+    private static void fourthTask() {
+        // выводим количество каждого фрукта на данный момент на складе
+        tradeShop.showCurrentStatusCountFruits();
+        // генерируем список покупок
+        GenerateStartJSON.generateOrder();
+        // показываем список покупок и продаем, если успешно выводим список склада в количестве, если нет то сообщение о неудаче
+        tradeShop.sell(order);
+        // состояние кошелька
+        System.out.println("В кошельке " + tradeShop.getPurse().getSum());
+
     }
 }
