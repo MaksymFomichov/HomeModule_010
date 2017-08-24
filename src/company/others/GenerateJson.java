@@ -10,12 +10,12 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
-public class GenerateStartJSON {
+public class GenerateJson {
     private static String[] dateDelivery = {"20.08.2017", "21.08.2017", "23.08.2017"};
     private static String[] clients = {"Александр", "Ольга", "Злата", "Марина", "Иван"};
     private static Random random = new Random();
 
-    private GenerateStartJSON() {
+    private GenerateJson() {
     }
 
     public static void generateDelivery() {

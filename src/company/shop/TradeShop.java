@@ -2,21 +2,19 @@ package company.shop;
 
 import com.alibaba.fastjson.JSON;
 import company.Main;
+import company.others.DateUtils;
 import company.others.FileUtils;
 
 import java.io.IOException;
 import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 
 public class TradeShop {
     private List<Fruit> fruitsDB = new ArrayList<>();
     private List<Client> orderList = new ArrayList<>();
-    public final SimpleDateFormat dateFormat = new SimpleDateFormat("dd.MM.yyyy"); // задаем формат даты
-    private Calendar calendar = Calendar.getInstance(); // подключаем календарь
+
     private Purse moneyBalance = new Purse();
 
     public Purse getPurse() {
@@ -65,8 +63,8 @@ public class TradeShop {
     public List<Fruit> getSpoiledFruits(Date date) throws ParseException {
         List<Fruit> fruitList = new ArrayList<>();
         for (Fruit value : fruitsDB) {
-            Date dateExpiration = getDateExpiration(value.getDateDelivery(), value.getDateExpiration()); // день окончания срока хранения
-            if (datesComparing(dateExpiration, date)) {
+            Date dateExpiration = DateUtils.getDateExpiration(value.getDateDelivery(), value.getDateExpiration()); // день окончания срока хранения
+            if (DateUtils.datesComparing(dateExpiration, date)) {
                 fruitList.add(value);
             }
         }
@@ -78,8 +76,8 @@ public class TradeShop {
         List<Fruit> fruitList = new ArrayList<>();
         for (Fruit value : fruitsDB) {
             if (value.getFruit().equals(typeFruit)) {
-                Date dateExpiration = getDateExpiration(value.getDateDelivery(), value.getDateExpiration()); // день окончания срока хранения
-                if (datesComparing(dateExpiration, date)) {
+                Date dateExpiration = DateUtils.getDateExpiration(value.getDateDelivery(), value.getDateExpiration()); // день окончания срока хранения
+                if (DateUtils.datesComparing(dateExpiration, date)) {
                     fruitList.add(value);
                 }
             }
@@ -91,8 +89,8 @@ public class TradeShop {
     public List<Fruit> getAvailableFruits(Date date) throws ParseException {
         List<Fruit> fruitList = new ArrayList<>();
         for (Fruit value : fruitsDB) {
-            Date dateExpiration = getDateExpiration(value.getDateDelivery(), value.getDateExpiration()); // день окончания срока хранения
-            if (!datesComparing(dateExpiration, date)) {
+            Date dateExpiration = DateUtils.getDateExpiration(value.getDateDelivery(), value.getDateExpiration()); // день окончания срока хранения
+            if (!DateUtils.datesComparing(dateExpiration, date)) {
                 fruitList.add(value);
             }
         }
@@ -104,8 +102,8 @@ public class TradeShop {
         List<Fruit> fruitList = new ArrayList<>();
         for (Fruit value : fruitsDB) {
             if (value.getFruit().equals(typeFruit)) {
-                Date dateExpiration = getDateExpiration(value.getDateDelivery(), value.getDateExpiration()); // день окончания срока хранения
-                if (!datesComparing(dateExpiration, date)) {
+                Date dateExpiration = DateUtils.getDateExpiration(value.getDateDelivery(), value.getDateExpiration()); // день окончания срока хранения
+                if (!DateUtils.datesComparing(dateExpiration, date)) {
                     fruitList.add(value);
                 }
             }
@@ -117,7 +115,7 @@ public class TradeShop {
     public List<Fruit> getAddedFruits(Date date) throws ParseException {
         List<Fruit> fruitList = new ArrayList<>();
         for (Fruit value : fruitsDB) {
-            Date dateDelivery = convertStringToDate(value.getDateDelivery());
+            Date dateDelivery = DateUtils.convertStringToDate(value.getDateDelivery());
             if (dateDelivery.getTime() == date.getTime()) {
                 fruitList.add(value);
             }
@@ -129,7 +127,7 @@ public class TradeShop {
     public List<Fruit> getAddedFruits(Date date, Fruit.TypeFruit typeFruit) throws ParseException {
         List<Fruit> fruitList = new ArrayList<>();
         for (Fruit value : fruitsDB) {
-            Date dateDelivery = convertStringToDate(value.getDateDelivery());
+            Date dateDelivery = DateUtils.convertStringToDate(value.getDateDelivery());
             if (dateDelivery.getTime() == date.getTime()) {
                 if (value.getFruit().equals(typeFruit)) {
                     fruitList.add(value);
@@ -202,7 +200,11 @@ public class TradeShop {
         System.out.printf("\n%10s%15s%8s%15s%35s%n", "дата поставки", "тип фрукта", "цена", "срок годности", "дата окончания срока годности");
         System.out.println("---------------------------------------------------------------------------------------");
         for (Fruit value : fruitList) {
-            System.out.printf("%10s%15s%10s%10s%25s%n", "" + value.getDateDelivery() + "", "" + value.getFruit() + "", "" + value.getPrice(), "" + value.getDateExpiration(), "" + dateFormat.format(getDateExpiration(value.getDateDelivery(), value.getDateExpiration())));
+            System.out.printf("%10s%15s%10s%10s%25s%n", "" + value.getDateDelivery()
+                    + "", "" + value.getFruit()
+                    + "", "" + value.getPrice(), ""
+                    + value.getDateExpiration(), ""
+                    + DateUtils.dateFormat.format(DateUtils.getDateExpiration(value.getDateDelivery(), value.getDateExpiration())));
         }
     }
 
@@ -236,30 +238,4 @@ public class TradeShop {
             System.out.printf("%10s%10s%n", "" + value, "" + getCountFruit(value));
         }
     }
-
-    // получаем дату окончания срока годности продукта (к заданной дате прибавляем заданное количество дней)
-    private Date getDateExpiration(String dateDelivery, int plusDay) throws ParseException {
-        calendar.setTime(dateFormat.parse(dateDelivery)); // устанавливаем дату, с которой будем производить операции
-        calendar.add(Calendar.DAY_OF_MONTH, plusDay);// прибавляем plusDay к установленной дате
-        Date newDate = calendar.getTime(); // получаем измененную дату
-        return newDate;
-    }
-
-    // сравнениваем две даты
-    private Boolean datesComparing(Date dateExpiration, Date date) {
-        if (dateExpiration.getTime() < date.getTime()) {
-            return true;
-        } else {
-            return false;
-        }
-    }
-
-    // конвентируем дату с текстового формата в обьект класса Date
-    public Date convertStringToDate(String date) throws ParseException {
-        calendar.setTime(dateFormat.parse(date)); //устанавливаем дату, с которой будем производить операции
-        Date newDate = calendar.getTime(); // получаем дату
-        return newDate;
-    }
-
-
 }
