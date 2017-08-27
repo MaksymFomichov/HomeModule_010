@@ -1,4 +1,4 @@
-package company.others;
+package company.utils;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;

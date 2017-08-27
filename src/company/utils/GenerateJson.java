@@ -1,4 +1,4 @@
-package company.others;
+package company.utils;
 
 import com.alibaba.fastjson.JSON;
 import company.shop.Client;

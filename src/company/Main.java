@@ -1,7 +1,7 @@
 package company;
 
-import company.others.DateUtils;
-import company.others.GenerateJson;
+import company.utils.DateUtils;
+import company.utils.GenerateJson;
 import company.shop.Fruit;
 import company.shop.TradeShop;
 

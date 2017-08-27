@@ -2,14 +2,15 @@ package company.shop;
 
 import com.alibaba.fastjson.JSON;
 import company.Main;
-import company.others.DateUtils;
-import company.others.FileUtils;
+import company.utils.DateUtils;
+import company.utils.FileUtils;
 
 import java.io.IOException;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.StringJoiner;
 
 public class TradeShop {
     private List<Fruit> fruitsDB = new ArrayList<>();
@@ -150,24 +151,31 @@ public class TradeShop {
         } else {
             orderList.addAll(JSON.parseArray(json, Client.class));
         }
+        System.out.println("Список покупок:");
         showOrderList(); // показываем список покупок
+        // если фруктв хватает на складе то продаем
         if (checkFruits()) {
-            // поэлементно удаляем из базы нужное значение
-            for (int i = 0; i < orderList.size(); i++) {
-                for (int j = 0; j < orderList.get(i).getCount(); j++) {
-                    for (int k = 0; k < fruitsDB.size(); k++) {
-                        if (orderList.get(i).getTypeFruit().equals(fruitsDB.get(k).getFruit())) {
-                            moneyBalance.addPurse(fruitsDB.get(k).getPrice()); // заполняем кошелек баблом
-                            fruitsDB.remove(k);
-                            break;
-                        }
+            utilSave();
+        }
+    }
 
+    // метод удаления проданных элементов и обновления кошелька
+    private void utilSave(){
+        // поэлементно удаляем из базы нужное значение
+        for (int i = 0; i < orderList.size(); i++) {
+            for (int j = 0; j < orderList.get(i).getCount(); j++) {
+                for (int k = 0; k < fruitsDB.size(); k++) {
+                    if (orderList.get(i).getTypeFruit().equals(fruitsDB.get(k).getFruit())) {
+                        moneyBalance.addPurse(fruitsDB.get(k).getPrice()); // заполняем кошелек баблом
+                        fruitsDB.remove(k);
+                        break;
                     }
+
                 }
             }
-            showCurrentStatusCountFruits(); // показываем склад в количкестве по кадлому фрукту
-            save(Main.DB_fruits); // обновляем файл json
         }
+        showCurrentStatusCountFruits(); // показываем склад в количкестве по кадлому фрукту
+        save(Main.DB_fruits); // обновляем файл json
     }
 
     // проверка на достаточность на складе
@@ -200,11 +208,14 @@ public class TradeShop {
         System.out.printf("\n%10s%15s%8s%15s%35s%n", "дата поставки", "тип фрукта", "цена", "срок годности", "дата окончания срока годности");
         System.out.println("---------------------------------------------------------------------------------------");
         for (Fruit value : fruitList) {
-            System.out.printf("%10s%15s%10s%10s%25s%n", "" + value.getDateDelivery()
-                    + "", "" + value.getFruit()
-                    + "", "" + value.getPrice(), ""
-                    + value.getDateExpiration(), ""
-                    + DateUtils.dateFormat.format(DateUtils.getDateExpiration(value.getDateDelivery(), value.getDateExpiration())));
+            StringJoiner sj = new StringJoiner("      ");
+//            System.out.printf("%10s%15s%10s%10s%25s%n", "" + value.getDateDelivery()
+//                    + "", "" + value.getFruit()
+//                    + "", "" + value.getPrice(), ""
+//                    + value.getDateExpiration(), ""
+//                    + DateUtils.dateFormat.format(DateUtils.getDateExpiration(value.getDateDelivery(), value.getDateExpiration())));
+            String str = sj.add(value.getDateDelivery()).add(String.valueOf(value.getFruit())).add(String.valueOf(value.getPrice())).add(String.valueOf(value.getDateExpiration())).toString();
+            System.out.println(str);
         }
     }
 
